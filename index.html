@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alugar ou financiar um imóvel?</title>
+<style>
+  :root{
+    --ink:#1a2332;
+    --ink-soft:#3d4a5c;
+    --paper:#f7f5f0;
+    --paper-card:#ffffff;
+    --line:#dcd6c9;
+    --navy:#1f3a4d;
+    --navy-deep:#122733;
+    --gold:#a9762f;
+    --gold-soft:#c99a52;
+    --green:#2e6b4f;
+    --red:#9a3b34;
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    --serif: 'Source Serif 4', Georgia, serif;
+    --sans: 'Inter', -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.55;
+    font-size:16px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px 100px;}
+
+  header.hero{border-bottom:3px solid var(--navy);padding-bottom:24px;margin-bottom:36px;}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;}
+  h1{font-family:var(--serif);font-size:2.2rem;line-height:1.15;margin:0 0 10px;color:var(--navy-deep);font-weight:600;}
+  .hero-sub{color:var(--ink-soft);font-size:1rem;max-width:640px;margin:0;}
+
+  section{margin-bottom:40px;}
+  h2{font-family:var(--serif);font-size:1.3rem;color:var(--navy-deep);border-left:4px solid var(--gold);padding-left:12px;margin:0 0 18px;}
+
+  .form-card{background:var(--paper-card);border:1px solid var(--line);border-radius:8px;padding:24px;}
+  .form-group-title{font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--gold);margin:0 0 14px;}
+  .form-group-title:not(:first-child){margin-top:24px;}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media(max-width:700px){.grid{grid-template-columns:1fr 1fr;}}
+  .field label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:5px;}
+  .field .input-row{position:relative;}
+  .field input{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:9px 10px;
+    font-family:var(--mono);
+    font-size:14px;
+    color:var(--ink);
+    background:var(--paper);
+    font-variant-numeric:tabular-nums;
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--navy);outline-offset:1px;border-color:var(--navy);}
+  .field .suffix{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--ink-soft);pointer-events:none;font-family:var(--mono);}
+  .field select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:9px 10px;
+    font-family:var(--mono);
+    font-size:14px;
+    color:var(--ink);
+    background:var(--paper);
+    appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink-soft) 50%),linear-gradient(135deg,var(--ink-soft) 50%,transparent 50%);
+    background-position:calc(100% - 16px) 50%, calc(100% - 11px) 50%;
+    background-size:5px 5px, 5px 5px;
+    background-repeat:no-repeat;
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:12px;margin-top:24px;}
+  button{
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:14px;
+    padding:11px 22px;
+    border-radius:6px;
+    border:1px solid transparent;
+    cursor:pointer;
+  }
+  #calcular{background:var(--navy-deep);color:#fff;}
+  #calcular:hover{background:var(--navy);}
+  #limpar{background:transparent;color:var(--ink-soft);border-color:var(--line);}
+  #limpar:hover{border-color:var(--ink-soft);}
+
+  #resultados{display:none;}
+  .results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media(max-width:760px){.results-grid{grid-template-columns:1fr;}}
+  .result-card{background:var(--paper-card);border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:8px;padding:20px;}
+  .result-card.best{border-top-color:var(--gold);}
+  .result-card .label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .result-card .value{font-family:var(--serif);font-size:1.65rem;color:var(--navy-deep);font-weight:600;margin-bottom:14px;font-variant-numeric:tabular-nums;}
+  .result-card .sub{font-size:13px;color:var(--ink-soft);margin-bottom:4px;}
+  .result-card .sub b{font-family:var(--mono);color:var(--ink);font-variant-numeric:tabular-nums;}
+  .star{color:var(--gold);}
+
+  .callout{background:#eef2ee;border-left:4px solid var(--green);border-radius:0 6px 6px 0;padding:14px 18px;font-size:14px;color:var(--ink);margin-top:18px;}
+
+  .detail-toggle{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--mono);font-size:12.5px;color:var(--navy);
+    background:none;border:1px solid var(--line);border-radius:6px;
+    padding:8px 14px;margin-top:22px;cursor:pointer;
+  }
+  .detail-toggle:hover{border-color:var(--navy);}
+  .toggle-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px;}
+  .toggle-row .detail-toggle{margin-top:0;}
+
+  #detalhamento, #caixaPremissas{display:none;margin-top:16px;}
+  .table-scroll{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px;}
+  table{width:100%;min-width:1180px;border-collapse:collapse;font-size:12.5px;}
+  thead th{
+    position:sticky;top:0;background:var(--navy-deep);color:#fff;
+    text-align:right;font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.03em;
+    padding:9px 8px;white-space:nowrap;
+  }
+  thead th:first-child{text-align:left;}
+  tbody td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap;}
+  tbody td:first-child{text-align:left;color:var(--ink-soft);}
+  tbody tr:nth-child(even){background:#faf9f5;}
+  tbody tr.year-mark td{background:#f0e9db;font-weight:600;}
+  tbody td.muted{color:#9aa3ad;}
+  .table-note{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin:16px 0 0;}
+  .premissas-box{
+    margin-top:18px;
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:20px 22px;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .premissas-box p{margin:0 0 12px;}
+  .premissas-box ul{margin:0 0 14px;padding-left:18px;}
+  .premissas-box li{margin-bottom:4px;}
+  .premissas-box .hint{margin:0;color:var(--ink-soft);font-size:13px;}
+
+  footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--ink-soft);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">Ferramenta Interna</div>
+    <h1>Alugar ou financiar um imóvel?</h1>
+    <p class="hero-sub">Preencha os campos com as premissas do cenário e clique em Calcular.</p>
+  </header>
+
+  <section>
+    <h2>Premissas</h2>
+    <div class="form-card">
+      <div class="form-group-title">Financiamento (Padrão Bancário)</div>
+      <div class="grid">
+        <div class="field"><label>Valor do imóvel</label><div class="input-row"><input id="valorImovel" class="mask-brl" type="text" value="780.000,00"><span class="suffix">R$</span></div></div>
+        <div class="field"><label>Entrada</label><div class="input-row"><input id="entrada" class="mask-brl" type="text" value="300.000,00"><span class="suffix">R$</span></div></div>
+        <div class="field"><label>Custos do financiamento</label><div class="input-row"><input id="custos" class="mask-brl" type="text" value="35.000,00"><span class="suffix">R$</span></div></div>
+        <div class="field"><label>Prazo</label><div class="input-row"><input id="prazo" type="text" value="360"><span class="suffix">meses</span></div></div>
+        <div class="field"><label>Taxa anual (Nominal)</label><div class="input-row"><input id="taxaAnual" type="text" value="11,00"><span class="suffix">% a.a.</span></div></div>
+        <div class="field"><label>Correção do saldo (TR)</label><div class="input-row"><input id="tr" type="text" value="1,00"><span class="suffix">% a.a.</span></div></div>
+      </div>
+
+      <div class="form-group-title">Aluguel &amp; Investimentos</div>
+      <div class="grid">
+        <div class="field"><label>Valor do aluguel</label><div class="input-row"><input id="aluguelInicial" class="mask-brl" type="text" value="3.000,00"><span class="suffix">R$</span></div></div>
+        <div class="field"><label>Valorização anual do imóvel</label><div class="input-row"><input id="valorizacao" type="text" value="4,00"><span class="suffix">% a.a.</span></div></div>
+        <div class="field"><label>IGPM anual</label><div class="input-row"><input id="igpm" type="text" value="5,00"><span class="suffix">% a.a.</span></div></div>
+        <div class="field"><label>Rentabilidade anual da carteira</label><div class="input-row"><input id="rentabilidade" type="text" value="9,00"><span class="suffix">% a.a.</span></div></div>
+      </div>
+
+      <div class="form-group-title">Amortização extra</div>
+      <div class="grid">
+        <div class="field"><label>Valor da amortização</label><div class="input-row"><input id="valorAmort" class="mask-brl" type="text" value="0,00"><span class="suffix">R$</span></div></div>
+        <div class="field"><label>Amortizar no</label><select id="destinoAmort"><option value="prazo" selected>Prazo</option><option value="parcela">Parcela</option></select></div>
+        <div class="field"><label>Frequência</label><select id="freqAmort"><option value="uma" selected>Uma vez</option><option value="multiplas">Múltiplas vezes</option></select></div>
+        <div class="field"><label>Parcela / intervalo</label><div class="input-row"><input id="aposParcela" type="text" value="12"><span class="suffix">nº</span></div></div>
+      </div>
+
+      <div class="actions">
+        <button id="limpar" type="button">Limpar</button>
+        <button id="calcular" type="button">Calcular →</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="resultados">
+    <h2>Resultados</h2>
+    <div class="results-grid">
+      <div class="result-card" id="cardSo">
+        <div class="label">🏠 Só financiando</div>
+        <div class="value" id="soPatrimonio">—</div>
+        <div class="sub">Valor do imóvel (final)</div>
+        <div class="sub">Total pago: <b id="soPago">—</b></div>
+        <div class="sub">Amort. extras: <b id="soExtras">—</b></div>
+        <div class="sub">Dívida final: <b id="soDivida">—</b></div>
+        <div class="sub">Quitado no mês: <b id="soQuitado">—</b></div>
+      </div>
+      <div class="result-card" id="cardFinanc">
+        <div class="label">💳 Financiando e investindo</div>
+        <div class="value" id="financPatrimonio">—</div>
+        <div class="sub">Posição líquida (imóvel − dívida + carteira)</div>
+        <div class="sub">Imóvel: <b id="financImovel">—</b></div>
+        <div class="sub">Carteira: <b id="financCarteira">—</b></div>
+        <div class="sub">Total pago: <b id="financPago">—</b></div>
+        <div class="sub">Amort. extras: <b id="financExtras">—</b></div>
+        <div class="sub">Total aportado: <b id="financAportado">—</b></div>
+      </div>
+      <div class="result-card" id="cardAlug">
+        <div class="label"><span class="star">★</span> Alugando e investindo</div>
+        <div class="value" id="alugPatrimonio">—</div>
+        <div class="sub">Carteira (posição líquida)</div>
+        <div class="sub">Total pago de aluguel: <b id="alugPago">—</b></div>
+        <div class="sub">Total aportado: <b id="alugAportado">—</b></div>
+      </div>
+    </div>
+    <div class="callout" id="leitura"></div>
+    <p class="table-note" id="notaDesembolso"></p>
+
+    <div class="toggle-row">
+      <button class="detail-toggle" id="toggleDetalhe">▾ Ver detalhamento mensal</button>
+      <button class="detail-toggle" id="togglePremissas">▾ Ver premissas de IGP-M e valorização</button>
+    </div>
+    <div id="detalhamento">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Prestação</th>
+              <th>Amort. extra</th>
+              <th>Saldo devedor</th>
+              <th>Imóvel</th>
+              <th>Aporte financ.</th>
+              <th>Líquido financ.</th>
+              <th>Aluguel</th>
+              <th>Aporte alug.</th>
+              <th>Líquido alug.</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyDetalhe"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="premissas-box" id="caixaPremissas">
+      <div class="form-group-title">Como ler as premissas de IGP-M e valorização</div>
+      <p>Os campos do formulário são <strong>constantes anuais</strong> para o prazo inteiro. O histórico brasileiro não é constante: use as faixas abaixo para testar o cenário, não como previsão.</p>
+      <p><strong>IGP-M (reajuste do aluguel).</strong> O contrato típico corrige o aluguel uma vez ao ano, na 13ª parcela. Média de 30 anos fica perto de 7%–8% a.a.; a última década, puxada por 2020–21, fica perto de 6,5%–7%; os últimos 12 meses estão em torno de 2%. O padrão desta tela (5%) é um meio-termo — nem o recuo recente, nem o choque da pandemia.</p>
+      <ul>
+        <li>Conservador para quem aluga (aluguel sobe pouco): <strong>3% a.a.</strong></li>
+        <li>Base / realista nesta ferramenta: <strong>5% a.a.</strong></li>
+        <li>Estressado / histórico longo: <strong>7% a 8% a.a.</strong></li>
+      </ul>
+      <p><strong>Valorização do imóvel (São Paulo, nominal).</strong> FipeZap da capital, nos anos recentes, anda na casa de 3,5%–6,5% ao ano (12 meses até jul/2026: +3,7%). Quatro por cento a.a. é base — um pouco abaixo da média boa da década, sem ser pessimista. Em termos reais (descontada a inflação), 4% nominal costuma ser otimista: o ganho acima do IPCA em SP frequentemente fica perto de 0 a 2%.</p>
+      <ul>
+        <li>Conservador: <strong>2% a 3% a.a.</strong></li>
+        <li>Base / realista nesta ferramenta: <strong>4% a.a.</strong></li>
+        <li>Otimista (bairro líquido, ciclo favorável): <strong>6% a 7% a.a.</strong></li>
+      </ul>
+      <p class="hint">Bairro, padrão e liquidez mudam o número mais do que a média da cidade. Rodar 3% e 6% no mesmo prazo mostra a sensibilidade melhor do que cravar uma casa decimal.</p>
+    </div>
+  </section>
+
+  <footer>Motor: padrão bancário (taxa nominal/12), SAC recalculado, TR no saldo. Placar dos cards = posição líquida (imóvel − dívida + carteira). Aluguel reajusta na parcela 13.</footer>
+</div>
+
+<script>
+document.querySelectorAll('.mask-brl').forEach(input => {
+  input.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value === '') value = '0';
+    value = (parseInt(value, 10) / 100).toFixed(2);
+    e.target.value = new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  });
+});
+
+function brNumberToFloat(str){
+  if(typeof str !== 'string') return NaN;
+  return parseFloat(str.replace(/\./g,'').replace(',','.'));
+}
+function fmtBRL(v){
+  return v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+}
+function fmtBRLplain(v){
+  return v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtCell(v){
+  if(v === null || v === undefined) return '—';
+  return fmtBRLplain(v);
+}
+
+function getInputs(){
+  return {
+    valorImovel: brNumberToFloat(document.getElementById('valorImovel').value),
+    entrada: brNumberToFloat(document.getElementById('entrada').value),
+    custos: brNumberToFloat(document.getElementById('custos').value),
+    prazo: parseInt(document.getElementById('prazo').value.replace(/\D/g,''), 10),
+    taxaAnual: brNumberToFloat(document.getElementById('taxaAnual').value),
+    tr: brNumberToFloat(document.getElementById('tr').value),
+    aluguelInicial: brNumberToFloat(document.getElementById('aluguelInicial').value),
+    valorizacao: brNumberToFloat(document.getElementById('valorizacao').value),
+    igpm: brNumberToFloat(document.getElementById('igpm').value),
+    rentabilidade: brNumberToFloat(document.getElementById('rentabilidade').value),
+    valorAmort: brNumberToFloat(document.getElementById('valorAmort').value),
+    destinoAmort: document.getElementById('destinoAmort').value,
+    freqAmort: document.getElementById('freqAmort').value,
+    aposParcela: parseInt(String(document.getElementById('aposParcela').value).replace(/\D/g,''), 10) || 0,
+  };
+}
+
+function simular(inp){
+  const financiado = inp.valorImovel - inp.entrada;
+
+  // PADRÃO BANCÁRIO (CAIXA/ITAÚ): Taxa nominal anual dividida por 12 meses
+  const taxaMensal = (inp.taxaAnual / 100) / 12;
+
+  // As demais taxas compõem o índice de inflação/rendimento, usa-se a equivalente
+  const trMensal = Math.pow(1 + inp.tr/100, 1/12) - 1;
+  const valorizacaoMensal = Math.pow(1 + inp.valorizacao/100, 1/12) - 1;
+  const rentabMensal = Math.pow(1 + inp.rentabilidade/100, 1/12) - 1;
+
+  let saldo = financiado;
+  let carteiraFinanc = 0;
+  let carteiraAlug = inp.entrada + inp.custos;
+  let imovelValor = inp.valorImovel;
+
+  let totalPrestacoes = 0;
+  let totalExtras = 0;
+  let totalAluguel = 0;
+  let totalAportadoFinanc = 0;
+  let totalAportadoAlug = carteiraAlug;
+  let nRest = inp.prazo;
+  let mesQuitado = null;
+
+  const linhas = [];
+  linhas.push({
+    m: 0,
+    desembolsoInicial: inp.entrada + inp.custos,
+    prestacao: null,
+    aluguel: null,
+    saldo: financiado,
+    aporteFinanc: 0,
+    aporteAlug: inp.entrada + inp.custos,
+    extraAmort: null,
+    imovel: inp.valorImovel,
+    carteiraFinanc: 0,
+    carteiraAlug: inp.entrada + inp.custos,
+    liquidoFinanc: inp.valorImovel - financiado,
+    liquidoAlug: inp.entrada + inp.custos
+  });
+
+  for(let m=1; m<=inp.prazo; m++){
+    let prestacao = 0;
+    let extraAmort = 0;
+
+    if(saldo > 0.005 && nRest > 0){
+      // 1. SAC BANCÁRIO: Atualiza o saldo pela TR primeiro
+      const saldoCorrigido = saldo * (1 + trMensal);
+
+      // 2. SAC BANCÁRIO: Recalcula a cota no prazo restante (encurtado se amortizar no prazo)
+      const amortizacao = saldoCorrigido / nRest;
+
+      // 3. Juros sobre o saldo recém-corrigido
+      const juros = saldoCorrigido * taxaMensal;
+      prestacao = juros + amortizacao;
+
+      // 4. Abate a amortização da parcela
+      saldo = Math.max(saldoCorrigido - amortizacao, 0);
+      nRest -= 1;
+
+      // 5. Amortização extra na data de vencimento, depois da prestação
+      const aplicaExtra = inp.valorAmort > 0 && inp.aposParcela > 0 && (
+        inp.freqAmort === 'uma'
+          ? m === inp.aposParcela
+          : m % inp.aposParcela === 0
+      );
+      if(aplicaExtra && saldo > 0.005){
+        extraAmort = Math.min(inp.valorAmort, saldo);
+        saldo = Math.max(saldo - extraAmort, 0);
+        if(inp.destinoAmort === 'prazo' && saldo > 0.005){
+          // Caixa / reduzir prazo: mantém a prestação, sobe a amortização (A) e cai o juro (J)
+          const saldoProx = saldo * (1 + trMensal);
+          const jurosProx = saldoProx * taxaMensal;
+          const amortAlvo = prestacao - jurosProx;
+          if(amortAlvo > 1){
+            nRest = Math.max(1, Math.round(saldoProx / amortAlvo));
+          } else if(amortizacao > 0){
+            nRest = Math.max(1, Math.round(saldo / amortizacao));
+          }
+        }
+      }
+
+      if(saldo <= 0.005){
+        saldo = 0;
+        nRest = 0;
+        mesQuitado = m;
+      }
+    }
+
+    // Reajuste do Aluguel (Lei do Inquilino - Parcela 13)
+    const aluguel = inp.aluguelInicial * Math.pow(1 + inp.igpm/100, Math.floor((m - 1) / 12));
+    imovelValor *= (1 + valorizacaoMensal);
+
+    const desembolsoFinanc = prestacao + extraAmort;
+    let aporteFinanc = 0, aporteAlug = 0;
+    if(desembolsoFinanc >= aluguel){ aporteAlug = desembolsoFinanc - aluguel; }
+    else { aporteFinanc = aluguel - desembolsoFinanc; }
+
+    carteiraFinanc = carteiraFinanc * (1 + rentabMensal) + aporteFinanc;
+    carteiraAlug = carteiraAlug * (1 + rentabMensal) + aporteAlug;
+
+    totalPrestacoes += prestacao;
+    totalExtras += extraAmort;
+    totalAluguel += aluguel;
+    totalAportadoFinanc += aporteFinanc;
+    totalAportadoAlug += aporteAlug;
+
+    linhas.push({
+      m,
+      desembolsoInicial: null,
+      prestacao,
+      extraAmort,
+      aluguel,
+      saldo,
+      aporteFinanc,
+      aporteAlug,
+      imovel: imovelValor,
+      carteiraFinanc,
+      carteiraAlug,
+      liquidoFinanc: imovelValor - saldo + carteiraFinanc,
+      liquidoAlug: carteiraAlug
+    });
+
+    if(saldo <= 0.005){
+      saldo = 0;
+      mesQuitado = mesQuitado || m;
+      break;
+    }
+  }
+
+  const liquidoFinancFinal = imovelValor - saldo + carteiraFinanc;
+
+  return {
+    patrimSoFinanciando: imovelValor,
+    totalPagoFinanciando: totalPrestacoes + totalExtras + inp.entrada + inp.custos,
+    totalExtras,
+    mesQuitado: mesQuitado || inp.prazo,
+    saldoFinal: saldo,
+    imovelFinal: imovelValor,
+    carteiraFinancFinal: carteiraFinanc,
+    patrimFinancInvestindo: liquidoFinancFinal,
+    totalAportadoFinanc,
+    patrimAlugInvestindo: carteiraAlug,
+    totalPagoAluguel: totalAluguel,
+    totalAportadoAlug,
+    linhas
+  };
+}
+
+function renderResultados(r){
+  document.getElementById('soPatrimonio').textContent = fmtBRL(r.patrimSoFinanciando);
+  document.getElementById('soPago').textContent = fmtBRL(r.totalPagoFinanciando);
+  document.getElementById('soExtras').textContent = fmtBRL(r.totalExtras);
+  document.getElementById('soDivida').textContent = fmtBRL(r.saldoFinal);
+  document.getElementById('soQuitado').textContent = r.mesQuitado;
+
+  document.getElementById('financPatrimonio').textContent = fmtBRL(r.patrimFinancInvestindo);
+  document.getElementById('financImovel').textContent = fmtBRL(r.imovelFinal);
+  document.getElementById('financCarteira').textContent = fmtBRL(r.carteiraFinancFinal);
+  document.getElementById('financPago').textContent = fmtBRL(r.totalPagoFinanciando);
+  document.getElementById('financExtras').textContent = fmtBRL(r.totalExtras);
+  document.getElementById('financAportado').textContent = fmtBRL(r.totalAportadoFinanc);
+
+  document.getElementById('alugPatrimonio').textContent = fmtBRL(r.patrimAlugInvestindo);
+  document.getElementById('alugPago').textContent = fmtBRL(r.totalPagoAluguel);
+  document.getElementById('alugAportado').textContent = fmtBRL(r.totalAportadoAlug);
+
+  ['cardSo','cardFinanc','cardAlug'].forEach(id => document.getElementById(id).classList.remove('best'));
+  const vals = {
+    cardSo: r.patrimSoFinanciando,
+    cardFinanc: r.patrimFinancInvestindo,
+    cardAlug: r.patrimAlugInvestindo
+  };
+  const melhor = Object.keys(vals).reduce((a,b)=> vals[a] > vals[b] ? a : b);
+  document.getElementById(melhor).classList.add('best');
+
+  const ratio = vals.cardAlug / vals.cardFinanc;
+  const leitura = document.getElementById('leitura');
+  if(melhor === 'cardAlug'){
+    leitura.innerHTML = `<strong>Leitura:</strong> no placar líquido, "Alugando e investindo" supera "Financiando e investindo" em <strong>${ratio.toFixed(2).replace('.',',')}×</strong>.
+      Quem alugou ficou com <strong>${fmtBRL(r.patrimAlugInvestindo)}</strong> em carteira.
+      Quem financiou ficou com o imóvel de <strong>${fmtBRL(r.imovelFinal)}</strong> (dívida <strong>${fmtBRL(r.saldoFinal)}</strong>) + carteira de <strong>${fmtBRL(r.carteiraFinancFinal)}</strong> — líquido <strong>${fmtBRL(r.patrimFinancInvestindo)}</strong>.`;
+  } else if(melhor === 'cardFinanc'){
+    leitura.innerHTML = `<strong>Leitura:</strong> no placar líquido, "Financiando e investindo" supera "Alugando e investindo".
+      Quem financiou ficou com o imóvel de <strong>${fmtBRL(r.imovelFinal)}</strong> + carteira de <strong>${fmtBRL(r.carteiraFinancFinal)}</strong> (líquido <strong>${fmtBRL(r.patrimFinancInvestindo)}</strong>).
+      Quem alugou ficou com <strong>${fmtBRL(r.patrimAlugInvestindo)}</strong> em carteira.`;
+  } else {
+    leitura.innerHTML = `<strong>Leitura:</strong> "Só financiando" termina com o maior valor de imóvel (<strong>${fmtBRL(r.patrimSoFinanciando)}</strong>), mas sem carteira acumulada. No placar líquido, compare com os outros dois cards.`;
+  }
+
+  const desembolso0 = r.linhas[0] ? r.linhas[0].desembolsoInicial : 0;
+  document.getElementById('notaDesembolso').innerHTML =
+    `Desembolso inicial de quem compra (entrada + custos): <b>${fmtBRL(desembolso0)}</b>. Quem aluga começa a carteira com esse mesmo caixa.`;
+
+  const tbody = document.getElementById('tbodyDetalhe');
+  tbody.innerHTML = '';
+  r.linhas.forEach(l => {
+    const tr = document.createElement('tr');
+    if(l.m % 12 === 0) tr.classList.add('year-mark');
+    const dash = (v) => v === null ? '<span class="muted">—</span>' : fmtBRLplain(v);
+    tr.innerHTML = `
+      <td>${l.m}</td>
+      <td>${dash(l.prestacao)}</td>
+      <td>${l.extraAmort ? fmtBRLplain(l.extraAmort) : '<span class="muted">—</span>'}</td>
+      <td>${fmtBRLplain(l.saldo)}</td>
+      <td>${fmtBRLplain(l.imovel)}</td>
+      <td>${fmtBRLplain(l.aporteFinanc)}</td>
+      <td>${fmtBRLplain(l.liquidoFinanc)}</td>
+      <td>${dash(l.aluguel)}</td>
+      <td>${fmtBRLplain(l.aporteAlug)}</td>
+      <td>${fmtBRLplain(l.liquidoAlug)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('resultados').style.display = 'block';
+  document.getElementById('resultados').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+document.getElementById('calcular').addEventListener('click', () => {
+  const inp = getInputs();
+  const camposInvalidos = Object.entries(inp).filter(([k,v]) => Number.isNaN(v));
+  if(camposInvalidos.length > 0){
+    alert('Confira os campos preenchidos — algum valor não foi reconhecido como número.');
+    return;
+  }
+  const r = simular(inp);
+  renderResultados(r);
+});
+
+document.getElementById('limpar').addEventListener('click', () => {
+  document.getElementById('valorImovel').value = '0,00';
+  document.getElementById('entrada').value = '0,00';
+  document.getElementById('custos').value = '0,00';
+  document.getElementById('prazo').value = '360';
+  document.getElementById('taxaAnual').value = '0,00';
+  document.getElementById('tr').value = '0,00';
+  document.getElementById('aluguelInicial').value = '0,00';
+  document.getElementById('valorizacao').value = '0,00';
+  document.getElementById('igpm').value = '0,00';
+  document.getElementById('rentabilidade').value = '0,00';
+  document.getElementById('valorAmort').value = '0,00';
+  document.getElementById('destinoAmort').value = 'prazo';
+  document.getElementById('freqAmort').value = 'uma';
+  document.getElementById('aposParcela').value = '12';
+  document.getElementById('resultados').style.display = 'none';
+});
+
+document.getElementById('toggleDetalhe').addEventListener('click', (e) => {
+  const el = document.getElementById('detalhamento');
+  const showing = el.style.display === 'block';
+  el.style.display = showing ? 'none' : 'block';
+  e.target.textContent = showing ? '▾ Ver detalhamento mensal' : '▴ Ocultar detalhamento mensal';
+});
+
+document.getElementById('togglePremissas').addEventListener('click', (e) => {
+  const el = document.getElementById('caixaPremissas');
+  const showing = el.style.display === 'block';
+  el.style.display = showing ? 'none' : 'block';
+  e.target.textContent = showing ? '▾ Ver premissas de IGP-M e valorização' : '▴ Ocultar premissas de IGP-M e valorização';
+});
+
+window.onload = () => {
+  document.getElementById('calcular').click();
+};
+</script>
+</body>
+</html>
